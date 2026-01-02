@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>西语单词记忆卡片</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            overflow-x: hidden;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 15px;
+            width: 100%;
+            max-width: 800px;
+            padding: 15px;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(90deg, #ffeb3b, #ff9800);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        .progress-container {
+            width: 100%;
+            max-width: 520px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            color: white;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .card-scene {
+            width: 100%;
+            max-width: 520px;
+            height: 380px;
+            perspective: 1000px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+            overflow: hidden;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
+            color: #333;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            transform: rotateY(180deg);
+            overflow-y: auto;
+            justify-content: flex-start;
+        }
+
+        .word {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #1a237e;
+        }
+
+        .hint {
+            font-size: 1rem;
+            color: #666;
+            font-style: italic;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .word-info {
+            width: 100%;
+        }
+
+        .word-info h2 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #ffeb3b;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .part-of-speech {
+            display: inline-block;
+            background-color: #4caf50;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .meaning {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .examples {
+            width: 100%;
+        }
+
+        .example {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-left: 3px solid #ff9800;
+            font-size: 0.95rem;
+        }
+
+        .example span {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #ffeb3b;
+            font-size: 0.9rem;
+        }
+
+        .example p {
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            min-width: 160px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #ff9800, #ff5722);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(90deg, #2196f3, #0d47a1);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn i {
+            font-size: 1.2rem;
+        }
+
+        .instructions {
+            color: white;
+            text-align: center;
+            margin-top: 20px;
+            max-width: 520px;
+            line-height: 1.5;
+            font-size: 0.9rem;
+            opacity: 0.9;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        .instructions i {
+            color: #ffeb3b;
+            margin: 0 4px;
+        }
+
+        .word-count {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: rgba(0, 0, 0, 0.3);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .card-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            color: #1a237e;
+            opacity: 0.8;
+        }
+
+        /* ✅ 打卡区样式 */
+        #checkin-box {
+            display: none;
+            margin-top: 20px;
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px dashed #4caf50;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: #fff;
+            max-width: 520px;
+            width: 100%;
+            animation: fadeIn 0.5s ease;
+        }
+
+        #checkin-code {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 15px 0;
+            letter-spacing: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            color: #ffeb3b;
+        }
+
+        #checkin-box h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #ffeb3b;
+        }
+
+        #checkin-box p {
+            margin-bottom: 5px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .card-scene {
+                height: 400px;
+                max-width: 500px;
+            }
+            
+            .word {
+                font-size: 2.5rem;
+            }
+            
+            .word-info h2 {
+                font-size: 1.8rem;
+            }
+            
+            .btn {
+                min-width: 140px;
+                padding: 10px 20px;
+                font-size: 0.95rem;
+            }
+            
+            .card-face {
+                padding: 20px;
+            }
+            
+            .progress-container {
+                max-width: 500px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .card-scene {
+                height: 420px;
+                max-width: 95%;
+            }
+            
+            .word {
+                font-size: 2rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .btn {
+                width: 90%;
+                max-width: 250px;
+            }
+            
+            .instructions {
+                font-size: 0.85rem;
+                padding: 10px;
+            }
+            
+            #checkin-code {
+                font-size: 1.5rem;
+                padding: 12px;
+            }
+        }
+
+        @media (max-height: 700px) {
+            .card-scene {
+                height: 350px;
+            }
+            
+            .header {
+                margin-bottom: 10px;
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .instructions {
+                margin-top: 15px;
+                padding: 10px;
+            }
+        }
+
+        /* 滚动条样式 */
+        .card-back::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .card-back::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .card-back::-webkit-scrollbar-thumb {
+            background: #ff9800;
+            border-radius: 3px;
+        }
+
+        .card-back::-webkit-scrollbar-thumb:hover {
+            background: #ff5722;
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .completed .progress-fill {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-language"></i> 西语单词记忆卡片</h1>
+        <p>完成全部22个单词后即可生成打卡码</p>
+    </div>
+
+    <div class="progress-container" id="progress-container">
+        <div class="progress-info">
+            <span>学习进度</span>
+            <span id="current-count">0</span> / <span id="total-count">22</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card-scene">
+            <div class="card" id="card">
+                <div class="card-face card-front">
+                    <div class="card-icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div class="word" id="word-front">¡Hola!</div>
+                    <div class="hint">点击卡片翻转查看释义和例句</div>
+                </div>
+                <div class="card-face card-back">
+                    <div class="word-count" id="word-count">1/22</div>
+                    <div class="word-info">
+                        <h2 id="word-back"></h2>
+                        <div class="part-of-speech" id="part-of-speech"></div>
+                        <div class="meaning" id="meaning"></div>
+                        <div class="examples" id="examples"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="flip-btn">
+                <i class="fas fa-sync-alt"></i> 翻转卡片
+            </button>
+            <button class="btn btn-secondary" id="next-btn">
+                <i class="fas fa-random"></i> 随机下一个
+            </button>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <p><i class="fas fa-lightbulb"></i> <strong>使用提示：</strong> 点击卡片或"翻转卡片"按钮查看单词详细信息。"随机下一个"按钮会随机显示新单词。完成所有22个单词后，将自动生成打卡码。</p>
+        <p><i class="fas fa-keyboard"></i> <strong>快捷键：</strong> 空格键翻转卡片，回车键切换单词</p>
+    </div>
+
+    <!-- ✅ 打卡区 -->
+    <div id="checkin-box">
+        <h3>🎉 恭喜！学习完成</h3>
+        <p>您已成功学习全部22个西语单词</p>
+        <p>你的打卡码是：</p>
+        <div id="checkin-code"></div>
+        <p style="font-size:.85rem;">请截图或复制此代码提交作业</p>
+    </div>
+
+    <script>
+        // 单词数据 - 完整22个单词
+        const words = [
+            {
+                word: "atravesar",
+                pos: "tr.",
+                meaning: "1. 横穿，穿过（具体空间）<br>2. 穿透，刺穿<br>3. 经历（困难时期等）",
+                examples: [
+                    "El río atraviesa el bosque. (这条河穿过森林。)",
+                    "La flecha atravesó la ventana sin romperla. (箭射穿了窗户却没有打破它。)",
+                    "Durante la pandemia, muchas familias atravesaron momentos de incertidumbre económica. (疫情期间，许多家庭经历了经济不确定的时期。)"
+                ]
+            },
+            {
+                word: "caudaloso, sa",
+                pos: "adj.",
+                meaning: "1. 水量丰沛的（指河流）<br>2. 丰富的，充沛的（可比喻财富、资源等）",
+                examples: [
+                    "El Amazonas es el río más caudaloso del mundo. (亚马孙河是世界上水量最丰沛的河流。)",
+                    "La empresa tiene una caudalosa fuente de ingresos por exportaciones. (该公司拥有丰富的出口收入来源。)",
+                    "Tras las lluvias torrenciales, los arroyos se transformaron en torrentes caudalosos que desbordaron los cultivos. (暴雨过后，小溪变成了汹涌的水流，淹没了庄稼。)"
+                ]
+            },
+            {
+                word: "dividir",
+                pos: "tr.",
+                meaning: "1. 分开，分割（具体物体）<br>2. 划分（区域、时间等）<br>3. 除以（数学）<br>4. 使产生分歧",
+                examples: [
+                    "Dividimos la pizza en ocho porciones. (我们把披萨分成八份。)",
+                    "Para resolver el problema, es crucial dividir el proyecto en etapas más pequeñas. (为了解决这个问题，将项目划分为更小的阶段至关重要。)",
+                    "La controvertida decisión del gobierno ha dividido a la opinión pública. (政府的争议性决定使舆论产生分歧。)"
+                ]
+            },
+            {
+                word: "ambos, bas",
+                pos: "adj./pron.",
+                meaning: "1. 两个，双方（指两者都）<br>2. 两者（作代词，替代前文提到的两个事物/人）",
+                examples: [
+                    "Ambos equipos jugarán la final el domingo. (两支队伍都将在周日参加决赛。)",
+                    "Aunque tienen estilos diferentes, ambos artistas han influido profundamente en la pintura contemporánea. (尽管风格不同，两位艺术家都对当代绘画产生了深远影响。)",
+                    "Tras analizar ambas posturas, el juez determinó que ninguno de los argumentos era suficiente. (分析双方立场后，法官判定没有任何一方的论据足以使合同无效。)"
+                ]
+            },
+            {
+                word: "a lo lejos",
+                pos: "loc. adv.",
+                meaning: "1. 在远处，从远处<br>2. 遥远处（固定短语，表示空间距离）",
+                examples: [
+                    "A lo lejos se ven las montañas nevadas. (远处可以看到雪山。)",
+                    "El sonido de las campanas, que se escuchaba a lo lejos, creaba una atmósfera de tranquilidad en el pueblo. (远处传来的钟声在镇上营造出一种宁静的氛围。)",
+                    "A lo lejos, el perfil de la ciudad moderna se fundía con el crepúsculo. (远处，现代城市的轮廓与暮色交融。)"
+                ]
+            },
+            {
+                word: "puente",
+                pos: "m.",
+                meaning: "1. 桥，桥梁（具体）<br>2. 桥梁，纽带（比喻关系、交流）<br>3. 假桥，长周末（因节假日连接出的连续休息日）",
+                examples: [
+                    "El puente de piedra tiene más de cien años. (这座石桥有一百多年的历史。)",
+                    "El acuerdo comercial sirvió de puente para mejorar las relaciones diplomáticas entre los dos países. (这项贸易协议成为了改善两国外交关系的桥梁。)",
+                    "Como el jueves es festivo, muchos empleados decidieron hacer puente y no trabajar hasta el luno. (因为周四是节日，许多员工决定连休，直到周一才上班。)"
+                ]
+            },
+            {
+                word: "orilla",
+                pos: "f.",
+                meaning: "1. 岸，岸边（河、湖、海）<br>2. （物体的）边缘，边沿<br>3. （头发、织物的）镶边",
+                examples: [
+                    "Los niños juegan en la orilla del lago. (孩子们在湖边玩耍。)",
+                    "La histórica ciudad fue construida a orillas de un río caudaloso. (这座历史名城建在一条丰沛的河流岸边。)",
+                    "Tras el naufragio, lograron arrastrarse hasta la orilla. (海难后，他们设法爬到了岸边。)"
+                ]
+            },
+            {
+                word: "cuerda",
+                pos: "f.",
+                meaning: "1. 绳子，绳索<br>2. （乐器的）弦<br>3. （体育的）绳索、绷带；（数学的）弦<br>4. （人的）队列，一行",
+                examples: [
+                    "Necesitamos una cuerda fuerte para atar el paquete. (我们需要一根结实的绳子来捆包裹。)",
+                    "La tensión de las cuerdas de la guitarra afecta directamente la calidad del sonido. (吉他琴弦的张力直接影响音质。)",
+                    "Las negociaciones andan sobre la cuerda floja. (谈判正处在危险边缘。)"
+                ]
+            },
+            {
+                word: "brillante",
+                pos: "adj.",
+                meaning: "1. 闪亮的，发光的，有光泽的<br>2. 杰出的，出色的，光辉的（比喻）<br>3. （钻石）完美的",
+                examples: [
+                    "Compró un collar con una piedra brillante. (她买了一条带闪亮宝石的项链。)",
+                    "El científico hizo una contribución brillante al campo de la medicina. (这位科学家用他的发现为医学领域做出了杰出贡献。)",
+                    "Aunque su discurso fue breve, estuvo salpicado de observaciones brillantes. (尽管他的演讲很简短，但其中点缀着许多精辟的见解。)"
+                ]
+            },
+            {
+                word: "suave",
+                pos: "adj.",
+                meaning: "1. 柔软的，柔滑的（触感）<br>2. 柔和的，轻柔的（光线、声音、风）<br>3. 温和的，平和的（性格、语气、味道）<br>4. 平缓的（坡度、变化）",
+                examples: [
+                    "La piel del bebé es muy suave. (婴儿的皮肤非常柔软。)",
+                    "Con una luz suave y música ambiental, el restaurante creó una atmósfera ideal. (凭借柔和的灯光和环境音乐，这家餐厅营造了理想的氛围。)",
+                    "A pesar de la noticia impactante, mantuvo un tono de voz sorprendentemente suave. (尽管消息令人震惊，他仍保持了出奇温和的语调。)"
+                ]
+            },
+            {
+                word: "luz",
+                pos: "f.",
+                meaning: "1. 光，光线，光亮（自然光或人造光）<br>2. 灯，光源<br>3. 电力（口语）<br>4. 启示，见解，智慧（比喻）<br>5. 曝光（摄影）",
+                examples: [
+                    "La luz del sol entra por la ventana. (阳光从窗户照进来。)",
+                    "A la luz de los nuevos datos, debemos reconsiderar nuestra estrategia. (根据新的数据，我们必须重新考虑我们的策略。)",
+                    "Tras años de investigación, su revolucionaria teoría finalmente vio la luz. (经过多年的秘密研究，他革命性的理论终于问世。)"
+                ]
+            },
+            {
+                word: "tocar",
+                pos: "tr./intr.",
+                meaning: "1. 触摸，触碰（用身体接触）<br>2. 弹奏（乐器）<br>3. 敲，击（如敲门）<br>4. 轮到（某人）<br>5. （与...）相邻，接壤",
+                examples: [
+                    "No toques el cuadro con las manos sucias. (别用脏手碰那幅画。)",
+                    "Según el sorteo, le tocó el premio mayor. (根据抽签，大奖轮到他了。)",
+                    "Aunque le tocó vivir en una época convulsa, supo transmitir una profunda esperanza. (尽管他生活在动荡年代，但他传递了对人类深深的希望。)"
+                ]
+            },
+            {
+                word: "lanzar",
+                pos: "tr.",
+                meaning: "1. 投，掷，抛（物体）<br>2. 发射（火箭、导弹）<br>3. 发出（呼喊、警告、叹息）<br>4. 推出（新产品、服务），发起（活动、攻击）<br>5. （植物）长出（新芽）",
+                examples: [
+                    "El pitcher lanzó la pelota con gran velocidad. (投手以极快的速度投出了球。)",
+                    "La compañía lanzará al mercado un dispositivo innovador la próxima primavera. (该公司将于明年春天向市场推出一款创新设备。)",
+                    "Tras lanzar un grito de advertencia, se lanzó sin vacilar hacia la multitud. (他发出一声警告后，毫不犹豫地冲向人群。)"
+                ]
+            },
+            {
+                word: "sorpresa",
+                pos: "f.",
+                meaning: "1. 惊讶，吃惊（情感）<br>2. 意想不到的事，惊喜（具体事物或事件）<br>3. 突袭，奇袭（军事）",
+                examples: [
+                    "¡Qué sorpresa verte aquí! (在这里见到你真是个惊喜！)",
+                    "La noticia de su dimisión cogió a todos por sorpresa. (他辞职的消息让所有人都感到意外。)",
+                    "Lo que parecía una simple fiesta resultó ser una elaborada sorpresa. (这看似一场简单的派对，结果却是一个精心策划的惊喜。)"
+                ]
+            },
+            {
+                word: "alargarse",
+                pos: "prnl.",
+                meaning: "1. （物体）变长，伸长<br>2. （时间）延长，拖长<br>3. （空间、距离）延伸<br>4. （人）躺下舒展身体（口语）",
+                examples: [
+                    "La sombra del árbol se alarga al atardecer. (树的影子在黄昏时分变长了。)",
+                    "El debate se alargó más de lo previsto debido a la complejidad del tema. (由于话题复杂，辩论比预期延长了许多。)",
+                    "A medida que la noche se alargaba, la línea entre la realidad y la ficción comenzó a difuminarse. (随着夜晚渐深，现实与虚构的界限开始完全模糊。)"
+                ]
+            },
+            {
+                word: "en cuanto",
+                pos: "loc. conj.",
+                meaning: "1. 一...就...（表示两个动作紧接着发生）<br>2. 关于，至于（与 a 连用，en cuanto a）",
+                examples: [
+                    "En cuanto salió el sol, salimos a pasear. (太阳一出来，我们就出去散步。)",
+                    "En cuanto recibas la confirmación, procede con el siguiente paso del plan. (你一收到确认，就进行计划的下一步。)",
+                    "En cuanto a las objeciones planteadas, el comité se comprometió a estudiarlas. (至于会议上提出的反对意见，委员会承诺将深入研究。)"
+                ]
+            },
+            {
+                word: "sostener",
+                pos: "tr.",
+                meaning: "1. 握住，支撑（具体物体）<br>2. 维持，保持（状态、生命、速度等）<br>3. 坚持（观点、主张）；主张，断言<br>4. 供养，赡养（家庭）",
+                examples: [
+                    "Las columnas sostienen el techo del templo. (柱子支撑着寺庙的屋顶。)",
+                    "El científico sostiene que su teoría es válida a pesar de las críticas. (这位科学家坚持认为他的理论是有效的，尽管有批评。)",
+                    "Sostuvo durante décadas que el universo se expandía a un ritmo acelerado. (他以不可动摇的信念坚持了数十年，认为宇宙正在加速膨胀。)"
+                ]
+            },
+            {
+                word: "transformarse en",
+                pos: "prnl.",
+                meaning: "1. 变成，转变为（性质、形态、状态的彻底改变）<br>2. 化身为（常用于文学或比喻）",
+                examples: [
+                    "El agua se transforma en hielo a los cero grados. (水在零度时变成冰。)",
+                    "Con los años, su simple afición por la fotografía se transformó en una exitosa carrera profesional. (多年来，他对摄影的简单爱好变成了一份成功的职业。)",
+                    "El tranquilo debate académico se transformó de pronto en una agria disputa personal. (这场平静的学术辩论突然演变成一场激烈的人身攻击。)"
+                ]
+            },
+            {
+                word: "invisible",
+                pos: "adj.",
+                meaning: "1. 看不见的，隐形的<br>2. 被忽视的，无形的（比喻）",
+                examples: [
+                    "El aire es invisible pero esencial. (空气看不见但至关重要。)",
+                    "El estrés es una carga invisible que afecta la salud de muchas personas. (压力是一种影响许多人健康的无形负担。)",
+                    "Para él, las barreras sociales eran tan reales como si fueran muros invisibles. (对他来说，遇到的社会壁垒就像无形的墙一样真实且具有限制性。)"
+                ]
+            },
+            {
+                word: "firme",
+                pos: "adj.",
+                meaning: "1. 坚固的，牢固的（具体物体）<br>2. 坚定的，坚决的（态度、信念、性格）<br>3. 稳定的，平稳的（经济、价格、步伐）<br>4. （法律、决定）正式生效的，最终的",
+                examples: [
+                    "Necesitamos una mesa firme para trabajar. (我们需要一张结实的桌子来工作。)",
+                    "Mantuvo una postura firme durante las negociaciones, a pesar de las presiones. (尽管有压力，他在谈判中仍保持坚定的立场。)",
+                    "Solo sobre la base de un compromiso firme se puede construir una alianza política que resista el paso del tiempo. (只有基于坚定的承诺才能建立起一个经得起时间考验的政治联盟。)"
+                ]
+            },
+            {
+                word: "cruzar",
+                pos: "tr./intr./prnl.",
+                meaning: "1. 穿过，横穿（马路、河流、边界等）<br>2. 使交叉，使相交<br>3. 交换（目光、话语等）<br>4. 交叉，相交<br>5. 与...相遇，不期而遇",
+                examples: [
+                    "Cruza el puente con cuidado. (小心过桥。)",
+                    "Los dos caminos se cruzan en el centro del pueblo. (两条路在镇中心相交。)",
+                    "Al cruzar la frontera, no pudo evitar cruzarse con los recuerdos de su infancia. (穿越边境时，他不可避免地与童年的回忆不期而遇。)"
+                ]
+            },
+            {
+                word: "pisar",
+                pos: "tr.",
+                meaning: "1. 踩，踏上（强调足部接触）<br>2. 踏入，来到（某地）<br>3. 贬低，欺凌（口语）<br>4. 弹奏（乐器时）按弦或键",
+                examples: [
+                    "No pises el césped. (请勿践踏草坪。)",
+                    "Al pisar por primera vez el escenario nacional, la joven pianista sintió una mezcla de pánico y emoción. (当这位年轻钢琴家首次登上国家级的舞台时，她感到一阵恐慌与激动交织的情绪。)",
+                    "Aquel político, acostumbrado a pisar a sus rivales, no imaginaba que años después sería él quien terminaría pisado. (那位习惯于踩踏对手的政治家没想到，多年后他自己最终会被碾轧。)"
+                ]
+            }
+        ];
+
+        // DOM 元素
+        const card = document.getElementById('card');
+        const wordFront = document.getElementById('word-front');
+        const wordBack = document.getElementById('word-back');
+        const partOfSpeech = document.getElementById('part-of-speech');
+        const meaning = document.getElementById('meaning');
+        const examplesContainer = document.getElementById('examples');
+        const flipBtn = document.getElementById('flip-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const currentCount = document.getElementById('current-count');
+        const totalCount = document.getElementById('total-count');
+        const progressFill = document.getElementById('progress-fill');
+        const wordCount = document.getElementById('word-count');
+        const progressContainer = document.getElementById('progress-container');
+        const checkinBox = document.getElementById('checkin-box');
+        const checkinCode = document.getElementById('checkin-code');
+
+        // 状态变量
+        let usedIndices = new Set();
+        let currentIndex = -1;
+        const totalWords = words.length;
+        totalCount.textContent = totalWords;
+
+        // 生成打卡码
+        function generateCheckinCode() {
+            const date = new Date().toISOString().slice(0,10).replace(/-/g,"");
+            const random = Math.random().toString(36).substr(2,4).toUpperCase();
+            return `ESP-${date}-${random}`;
+        }
+
+        // 初始化
+        function init() {
+            // 显示第一个单词
+            getRandomWord();
+            
+            // 更新进度
+            updateProgress();
+        }
+
+        // 获取随机单词
+        function getRandomWord() {
+            // 如果所有单词都已显示，重置
+            if (usedIndices.size >= totalWords) {
+                usedIndices.clear();
+            }
+            
+            // 获取一个未使用的随机索引
+            let newIndex;
+            do {
+                newIndex = Math.floor(Math.random() * totalWords);
+            } while (usedIndices.has(newIndex) && usedIndices.size < totalWords);
+            
+            // 添加到已使用集合
+            usedIndices.add(newIndex);
+            currentIndex = newIndex;
+            
+            // 更新卡片正面
+            updateCardFront();
+            
+            // 确保卡片翻回正面
+            card.classList.remove('flipped');
+            
+            // 更新进度
+            updateProgress();
+        }
+
+        // 更新卡片正面
+        function updateCardFront() {
+            const currentWord = words[currentIndex];
+            wordFront.textContent = currentWord.word;
+            
+            // 更新单词计数显示
+            wordCount.textContent = `${usedIndices.size}/${totalWords}`;
+        }
+
+        // 更新卡片背面
+        function updateCardBack() {
+            const currentWord = words[currentIndex];
+            wordBack.textContent = currentWord.word;
+            partOfSpeech.textContent = currentWord.pos;
+            meaning.innerHTML = currentWord.meaning;
+            
+            // 清空并添加例句
+            examplesContainer.innerHTML = '';
+            currentWord.examples.forEach((example, index) => {
+                const difficulty = index === 0 ? "初级" : index === 1 ? "中级" : "高级";
+                const exampleDiv = document.createElement('div');
+                exampleDiv.className = 'example';
+                exampleDiv.innerHTML = `<span>例句 (${difficulty})</span><p>${example}</p>`;
+                examplesContainer.appendChild(exampleDiv);
+            });
+        }
+
+        // 更新进度条
+        function updateProgress() {
+            const progress = (usedIndices.size / totalWords) * 100;
+            progressFill.style.width = `${progress}%`;
+            currentCount.textContent = usedIndices.size;
+            
+            // 检查是否完成所有单词
+            if (usedIndices.size === totalWords) {
+                // 显示打卡码
+                if (!checkinCode.textContent) {
+                    checkinCode.textContent = generateCheckinCode();
+                    checkinBox.style.display = 'block';
+                    progressContainer.classList.add('completed');
+                }
+            }
+        }
+
+        // 翻转卡片
+        function flipCard() {
+            // 如果是翻到背面，先更新背面内容
+            if (!card.classList.contains('flipped')) {
+                updateCardBack();
+            }
+            card.classList.toggle('flipped');
+        }
+
+        // 事件监听
+        flipBtn.addEventListener('click', flipCard);
+        
+        card.addEventListener('click', flipCard);
+        
+        nextBtn.addEventListener('click', () => {
+            getRandomWord();
+        });
+
+        // 初始化应用
+        init();
+        
+        // 添加键盘快捷键支持
+        document.addEventListener('keydown', (e) => {
+            // 空格键翻转卡片
+            if (e.code === 'Space') {
+                e.preventDefault();
+                flipCard();
+            }
+            
+            // 回车键下一个单词
+            if (e.code === 'Enter') {
+                e.preventDefault();
+                getRandomWord();
+            }
+        });
+    </script>
+</body>
+</html>
